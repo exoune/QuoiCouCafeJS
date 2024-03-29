@@ -20,7 +20,7 @@ module.exports = {
             }
 
             const userInfo = `
-                **ID Utilisateur:** ${userId}
+                **ID Utilisateur:** <@${user._id}>
                 **Coins:** ${user.coins}
                 **Food:** ${user.food}
                 **VieF:** ${user.vieF}

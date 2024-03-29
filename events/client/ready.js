@@ -19,7 +19,7 @@ module.exports = {
         })
             .then(()=> {Logger.client("Succesfully connected to MongoDB")})
             .catch(error => Logger.error(error));
-        Logger.client("RAVABOT ENCLANCHÉ");
+        Logger.client("QUOICOU ENCLANCHÉ");
 
         const FeurModel = mongoose.model('feur-counts', feurCountSchema);
 
@@ -37,7 +37,7 @@ module.exports = {
             const triggerTime = getRandomHour();
         
             const now = new Date();
-            triggerTime.setHours(triggerTime.getHours() + 24); //set trigger to next day
+            triggerTime.setHours(triggerTime.getHours()); //set trigger to next day
             Logger.event(`BeMusic | Next : ${triggerTime}`)
         
             const triggerMs = triggerTime.getTime() - now.getTime();
@@ -65,6 +65,6 @@ function getRandomHour(){
 
 function beMusicTrigger(){
     Logger.event("BeMusic | Triggered")
-    globalClient.channels.cache.get(`1128419322402967554`).send(`<@&${'1128418876082888775'}> C'est l'heure de poster la dernière musique que vous avez écoutée !`)
+    globalClient.channels.cache.get(`1222819900578598922`).send(`<@&${'1222820029616357486'}> C'est l'heure de poster la dernière musique que vous avez écoutée !`)
         .catch(error => Logger.error(error));
 }

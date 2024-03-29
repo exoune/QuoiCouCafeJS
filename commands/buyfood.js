@@ -1,5 +1,5 @@
 const { SlashCommandBuilder } = require('@discordjs/builders');
-const { EmbedBuilder } = require('discord.js'); // Utilisez MessageEmbed au lieu de EmbedBuilder
+const { EmbedBuilder } = require('discord.js');
 const mongoose = require('mongoose');
 const { coinFoodSchema } = require('../data/coinFood-schema.js');
 
@@ -10,59 +10,85 @@ module.exports = {
 
     async execute(interaction) {
         const userId = interaction.user.id;
+        const pomme = '🍎';
         
         try {
             const coinFoodModel = mongoose.model('coinFood', coinFoodSchema);
-            const user = await coinFoodModel.findOne({ _id: userId });
+            let user = await coinFoodModel.findOne({ _id: userId });
 
             if (!user) {
-                await interaction.reply("Vous n'avez pas encore attrapé de familiers.");
+                await interaction.reply("Vous n'avez pas encore de compte pour acheter de la nourriture.");
                 return;
             }
 
-            // Créez un message proposant différentes options de nourriture à acheter
-            const embed = new EmbedBuilder() // Utilisez MessageEmbed
+            // Création du message proposant différentes options de nourriture à acheter
+            const embed = new EmbedBuilder()
                 .setColor('#0099ff')
                 .setTitle('Options de nourriture')
                 .setDescription('Réagissez avec l\'emoji correspondant pour acheter de la nourriture.\n\n🍎 - Pomme (2 coins)');
 
             const message = await interaction.reply({ embeds: [embed], fetchReply: true });
 
-            // Ajoutez des réactions aux options de nourriture
+            // Ajout des réactions aux options de nourriture
             await message.react('🍎');
-
-            // Fonction pour écouter les réactions des utilisateurs
-            const collectorFilter = (reaction, user) => {return ['🍎'].includes(reaction.emoji.name) && user.id === interaction.user.id; };
-
-            message.awaitReactions({ filter: collectorFilter, max: 10, time: 60_000, errors: ['time'] })
-                .then(collected => {
-                    const reaction = collected.first();
-    
-                    if (reaction.emoji.name === '🍎') {
-                        // Vérifiez si l'utilisateur a assez de coins pour acheter la nourriture
-                        if (user.coins < 2) { // Utilisez user.coins pour vérifier les pièces de l'utilisateur
-                            interaction.followUp("Vous n'avez pas assez de coins pour acheter cette nourriture.");
-                            return;
-                        }
-
-                        // Mettez à jour la base de données de l'utilisateur pour incrémenter la nourriture et décrémenter les coins
-                        user.coins -= 2;
-                        user.food += 1;
-                        user.save();
-
-                        interaction.followUp("Vous avez acheté une pomme !");
-                    // Ajoutez d'autres cas pour d'autres options de nourriture si nécessaire
-                    } else {
-                        message.reply('Mauvais emoji');
-                    }
-                })
-                .catch(collected => {
-                    message.reply('La sélection de nourriture a expiré.');
-                });
+            await message.react('🍐');
             
-        }catch (error) {
-            console.error('Achat nourriture', error);
-            await interaction.reply('Une erreur s\'est produite lors de l\'achat de nourriture.');
+            // Attend que le message soit complètement disponible
+            await message.fetch();
+
+            // Attend les réactions des utilisateurs pendant 60 secondes
+            const collector = message.createReactionCollector({ time: 60000 });
+
+            collector.on('collect', async (reaction, user) => {
+                // Vérifiez si l'utilisateur est le bot ou si la réaction n'est pas une des réactions attendues
+                if (reaction.me || !['🍎', '🍐'].includes(reaction.emoji.name)) return;
+
+                console.log(`Reaction: ${reaction.emoji.name}, User: ${user.username}`);
+
+                // Votre logique pour traiter les réactions des utilisateurs ici
+                if (reaction.emoji.name === '🍎') {
+                    // Logique pour acheter une pomme
+                    console.log(`POMME`);
+
+                    // Vérification si l'utilisateur a assez de coins pour acheter la nourriture
+                    if (user.coins < 2) {
+                        await interaction.followUp("Vous n'avez pas assez de coins pour acheter cette nourriture.");
+                        return;
+                    }
+
+                    // Mise à jour de la base de données de l'utilisateur pour incrémenter la nourriture et décrémenter les coins
+                    user.coins -= 2;
+                    user.food += 1;
+                    await user.save();
+
+                    await interaction.followUp("Vous avez acheté une pomme !");
+                } else if (reaction.emoji.name === '🍐') {
+                    // Logique pour acheter une poire
+                    console.log(`POIRE`);
+
+                    // Vérification si l'utilisateur a assez de coins pour acheter la nourriture
+                    if (user.coins < 3) {
+                        await interaction.followUp("Vous n'avez pas assez de coins pour acheter cette nourriture.");
+                        return;
+                    }
+
+                    // Mise à jour de la base de données de l'utilisateur pour incrémenter la nourriture et décrémenter les coins
+                    user.coins -= 3;
+                    user.food += 1;
+                    await user.save();
+
+                    await interaction.followUp("Vous avez acheté une poire !");
+                }
+            });
+
+            collector.on('end', async (collected, reason) => {
+                if (reason === 'time') {
+                    await interaction.followUp("La sélection de nourriture a expiré.");
+                }
+            });
+        } catch (error) {
+            console.error('Erreur lors de l\'achat de nourriture :', error);
+            await interaction.reply("Une erreur s'est produite lors de l'achat de nourriture.");
         }
     },
 };
