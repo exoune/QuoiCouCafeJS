@@ -1,6 +1,16 @@
 const { SlashCommandBuilder } = require('@discordjs/builders');
 const { EmbedBuilder } = require('discord.js');
 const mongoose = require('mongoose');
+const Discord = require('discord.js');
+const { Client, GatewayIntentBits } = require('discord.js');
+
+const client = new Discord.Client({
+  intents: [
+    GatewayIntentBits.Guilds,
+    GatewayIntentBits.GuildMessages,
+  ]
+});
+
 const { coinFoodSchema } = require('../data/coinFood-schema.js');
 
 module.exports = {
@@ -10,7 +20,6 @@ module.exports = {
 
     async execute(interaction) {
         const userId = interaction.user.id;
-        const pomme = '🍎';
         
         try {
             const coinFoodModel = mongoose.model('coinFood', coinFoodSchema);
@@ -25,9 +34,11 @@ module.exports = {
             const embed = new EmbedBuilder()
                 .setColor('#0099ff')
                 .setTitle('Options de nourriture')
-                .setDescription('Réagissez avec l\'emoji correspondant pour acheter de la nourriture.\n\n🍎 - Pomme (2 coins)');
+                .setDescription('Réagissez avec l\'emoji correspondant pour acheter de la nourriture.\n\n🍎 - Pomme (2 coins) \n Réagissez avec l\'emoji correspondant pour acheter de la nourriture.\n\n🍐 - Poire (3 coins) ');
 
             const message = await interaction.reply({ embeds: [embed], fetchReply: true });
+
+
 
             // Ajout des réactions aux options de nourriture
             await message.react('🍎');
@@ -36,7 +47,7 @@ module.exports = {
             // Attend que le message soit complètement disponible
             await message.fetch();
 
-            // Attend les réactions des utilisateurs pendant 60 secondes
+            /* // Attend les réactions des utilisateurs pendant 60 secondes
             const collector = message.createReactionCollector({ time: 60000 });
 
             collector.on('collect', async (reaction, user) => {
@@ -85,7 +96,7 @@ module.exports = {
                 if (reason === 'time') {
                     await interaction.followUp("La sélection de nourriture a expiré.");
                 }
-            });
+            }); */
         } catch (error) {
             console.error('Erreur lors de l\'achat de nourriture :', error);
             await interaction.reply("Une erreur s'est produite lors de l'achat de nourriture.");

@@ -5,7 +5,7 @@ const { Schema, model, models } = mongoose; // Utilisez mongoose pour définir l
 const mesfamiliersSchema = new Schema({
     _id: { 
         type: String, 
-        unique: true 
+        required: true // Requis
     },
 
     familiersAttrapes: [{ 

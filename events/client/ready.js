@@ -37,7 +37,7 @@ module.exports = {
             const triggerTime = getRandomHour();
         
             const now = new Date();
-            triggerTime.setHours(triggerTime.getHours()); //set trigger to next day
+            triggerTime.setHours(triggerTime.getHours() + 24); //set trigger to next day
             Logger.event(`BeMusic | Next : ${triggerTime}`)
         
             const triggerMs = triggerTime.getTime() - now.getTime();

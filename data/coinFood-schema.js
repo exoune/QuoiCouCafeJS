@@ -4,8 +4,7 @@ const { Schema, model, models } = mongoose;
 const coinFoodSchema = new mongoose.Schema({
     _id: {
         type: String, // L'ID de l'utilisateur
-        required: true,
-        unique: true
+        required: true // Requis
     },
     coins: {
         type: Number, // La quantité d'argent de l'utilisateur
