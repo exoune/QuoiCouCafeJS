@@ -1,4 +1,4 @@
-const Logger = require("../../utils/Logger");
+const Logger = require("../../utils/Logger")
 const { feurCountSchema } = require('../../data/feur-count-schema.js')
 const { optionsSchema } = require('../../data/options-schema.js')
 const { familiersSchema } = require('../../data/familiers-schema.js')
@@ -6,7 +6,13 @@ const { mesfamiliersSchema } = require('../../data/mesfamiliers-schema.js')
 const { ActivityType } = require('discord.js');
 const mongoose = require('mongoose')
 
+const cron = require('node-cron');
+
 const regexPattern = /\s+/g;
+const regexPattern2 = /[^\w\s]/g; // Patron de regex pour enlever la ponctuation
+
+const pass = "MotDePasse";
+const mdp = "mdp";
 
 module.exports = {
     name: 'messageCreate',
@@ -117,15 +123,20 @@ module.exports = {
             message.reply("Je néo drift dans ta daronne");
             Logger.info(`Neo ${message.author.username} | ${message.channel.name}`);
         }
-        if(message.content.toLowerCase().replace(regexPattern, "").replace().includes("quoi"))
-        {
-            if(message.content.toLowerCase().includes("pourquoi")){
+
+        if (message.content.toLowerCase().replace(regexPattern2, "").replace(regexPattern, "").endsWith("quoi") 
+            || message.content.toLowerCase().replace(regexPattern2, "").replace(regexPattern, "").endsWith("quoi ?")
+            || message.content.toLowerCase().replace(regexPattern2, "").replace(regexPattern, "").endsWith("quoi !")
+            || message.content.toLowerCase().replace(regexPattern2, "").replace(regexPattern, "").endsWith("quoi ?!")
+            || message.content.toLowerCase().replace(regexPattern2, "").replace(regexPattern, "").endsWith("quoi .")
+            || message.content.toLowerCase().replace(regexPattern2, "").replace(regexPattern, "").endsWith("quoi,")){
+            if (message.content.toLowerCase().includes("pourquoi")) {
                 message.reply("Pour Feur").catch(error => console.log(error));
-            } else if(Math.random() < 0.02) {
+            } else if (Math.random() < 0.02) {
                 message.reply("coupaielecafé").catch(error => console.log(error));
-            }else if(Math.random() < 0.10){
+            } else if (Math.random() < 0.10) {
                 message.reply({ files: ["https://cdn.discordapp.com/attachments/1151806327862083676/1220322984401829960/2024-03-21-FEUR.gif?ex=660e8557&is=65fc1057&hm=afd5b6ad58a8c4bdd98d495687fcfeee540dffa763c77650370768a0f3cd5d53&"] }).catch(error => console.log(error));
-            }else{
+            } else {
                 message.reply("Feur").catch(error => console.log(error));
             }
 
@@ -150,7 +161,8 @@ module.exports = {
                 activities: [{ name: `${x.feurCount} Feurs`, type: ActivityType.Playing }],
             });
         }
-        if(message.content.toLowerCase().replace(regexPattern, "").replace().includes("comment"))
+        if(message.content.toLowerCase().replace(regexPattern2, "").replace(regexPattern, "").endsWith("comment")
+            || message.content.toLowerCase().replace(regexPattern2, "").replace(regexPattern, "").endsWith("comment ?"))
         {
             message.reply("dant cousteau").catch(error => console.log(error));
         }
@@ -179,6 +191,17 @@ module.exports = {
                 activities: [{ name: `${x.feurCount} Feurs`, type: ActivityType.Playing }],
             });
         }
+
+        if (message.content.toLowerCase().includes(mdp)) {
+            console.log('mdp');
+            const role = message.guild.roles.cache.find(role => role.name === 'QuoiCouBandit');
+            const member = message.member;
+            await member.roles.add(role);
+            message.reply('Mot de passe correct. Vous avez maintenant accès au salon.');    
+        }
+        /* if(message.content.toLowerCase().includes(mdp) && !message.content.toLowerCase().includes(pass)) {
+            message.reply('Mot de passe incorrect. Veuillez réessayer.');
+        } */
     }
 }
 

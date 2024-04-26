@@ -40,7 +40,9 @@ module.exports = {
                     if(user._id == "688751205643714623"){
                         replyMessage += `Utilisateur: CHLOE \nFamiliers: ${familiarList}\n\n`;
                     }
-                    
+                    if(user._id == "356091017314828289"){
+                        replyMessage += `Utilisateur: AMBRE \nFamiliers: ${familiarList}\n\n`;
+                    }
                 }
             });
 
