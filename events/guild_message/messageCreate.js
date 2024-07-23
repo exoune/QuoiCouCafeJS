@@ -1,8 +1,11 @@
+
 const Logger = require("../../utils/Logger")
 const { feurCountSchema } = require('../../data/feur-count-schema.js')
 const { optionsSchema } = require('../../data/options-schema.js')
 const { familiersSchema } = require('../../data/familiers-schema.js')
 const { mesfamiliersSchema } = require('../../data/mesfamiliers-schema.js')
+const { troubadourSchema } = require('../../data/troubadour-schema.js');
+
 const { ActivityType } = require('discord.js');
 const mongoose = require('mongoose')
 
@@ -12,19 +15,53 @@ const regexPattern = /\s+/g;
 const regexPattern2 = /[^\w\s]/g; // Patron de regex pour enlever la ponctuation
 
 const pass = "MotDePasse";
-const mdp = "mdp";
+const mdp = "Quoicoulove";
+
+const axios = require('axios');
+const CHANNEL_ID_MESSAGES = '1247522632052506715';
+const CHANNEL_ID_DEATHS = '1247620018871472279';
+const MINECRAFT_URL = 'http://QUOICOUMINECRAFT.exaroton.me:36578'; // Update with your Minecraft server URL
+
+const troubadourModel = mongoose.model('troubadour', troubadourSchema);
 
 module.exports = {
     name: 'messageCreate',
     once: false,
     async execute(client, message) {
+        const troubadour = await troubadourModel.findOne({ _id: message.author.id });
+
         if (message.author.bot) return;
+
+        if (message.channel.id === CHANNEL_ID_MESSAGES) {
+            axios.post(MINECRAFT_URL, {
+                content: message.author.username + ": " + message.content
+            }).catch(error => {
+                console.error('Erreur lors de l\'envoi du message à Minecraft:', error);
+            });
+        }
+
+        /* const channelName = '🎶🎧-bemusic';  // Remplacez par le nom de votre canal
+        if (message.channel.name === channelName) {
+            const spotifyUrlPattern = /https:\/\/open\.spotify\.com\/track\/([a-zA-Z0-9]+)/;
+            const match = spotifyUrlPattern.exec(message.content);
+            if (match) {
+                const trackId = match[1];
+                try {
+                    await spotifyApi.addTracksToPlaylist(playlistId, [`spotify:track:${trackId}`]);
+                    message.channel.send('La chanson a été ajoutée à la playlist!');
+                } catch (error) {
+                    console.error('Erreur lors de l\'ajout de la chanson à la playlist:', error);
+                    message.channel.send('Une erreur est survenue lors de l\'ajout de la chanson à la playlist.');
+                }
+            }
+        } */
+
 
         // Vérifier si le message contient le nom d'un familier
         const familiersModel = mongoose.model('familiers', familiersSchema);
         const familiers = await familiersModel.find({});
         const mentionedFamiliar = familiers.find(familiar => message.content.toLowerCase().includes(familiar._nom.toLowerCase()));
-        
+
         // Si un familier est mentionné dans le message
         if (mentionedFamiliar) {
             // Vérifier si l'utilisateur attrape le familier avec une probabilité basée sur sa rareté
@@ -123,6 +160,15 @@ module.exports = {
             message.reply("Je néo drift dans ta daronne");
             Logger.info(`Neo ${message.author.username} | ${message.channel.name}`);
         }
+        /* if(message.author.id === "124917171359973376"){
+            // Supprimer le message original
+            await message.delete();
+            
+            // Envoyer un nouveau message avec l'image
+            await message.channel.send({
+                files: [troubadour.image]
+            });
+        } */
 
         if (message.content.toLowerCase().replace(regexPattern2, "").replace(regexPattern, "").endsWith("quoi") 
             || message.content.toLowerCase().replace(regexPattern2, "").replace(regexPattern, "").endsWith("quoi ?")
@@ -135,7 +181,7 @@ module.exports = {
             } else if (Math.random() < 0.02) {
                 message.reply("coupaielecafé").catch(error => console.log(error));
             } else if (Math.random() < 0.10) {
-                message.reply({ files: ["https://cdn.discordapp.com/attachments/1151806327862083676/1220322984401829960/2024-03-21-FEUR.gif?ex=660e8557&is=65fc1057&hm=afd5b6ad58a8c4bdd98d495687fcfeee540dffa763c77650370768a0f3cd5d53&"] }).catch(error => console.log(error));
+                message.reply({ files: [troubadour.image] }).catch(error => console.log(error));
             } else {
                 message.reply("Feur").catch(error => console.log(error));
             }
