@@ -8,7 +8,7 @@ const mongoose = require('mongoose');
 const TOTAL_CARDS = 176;
 
 // URL de l'image du booster (remplacez ceci par l'URL réelle de votre image de booster)
-const BOOSTER_IMAGE_URL = 'https://i.pinimg.com/736x/51/f2/ef/51f2efd58e76a5d99a2e9f45326ea451.jpg';
+const BOOSTER_IMAGE_URL = 'https://i.pinimg.com/736x/67/72/33/677233debfa9bed20c397226c5c5e29a.jpg';
 
 const collectionModel = mongoose.model('collectionCarte', collectionCarteSchema);
 const dailyModel = mongoose.model('dailyLimits', dailyLimitsCarteSchema);
@@ -88,14 +88,28 @@ module.exports = {
                     user.nbJour += 1;
                     user.save();
 
-                    // Construire l'embed avec les trois cartes
-                    const cardsEmbed = new EmbedBuilder()
-                        .setColor(couleur)
-                        .setTitle('Vos cartes')
-                        .setDescription(cards.map(carte => `**${carte._id} - ${carte.nom}**\nFamille : ${carte.famille}\nRarete : ${carte.rarete}`).join('\n\n'))
-                        .setTimestamp();
+                    // Construire les embeds pour chaque carte
+                    const embeds = cards.map(carte => {
+                        let embedColor;
+                        if (carte.rarete === "Legendaire") {
+                            embedColor = 0xFFD700;
+                        } else if (carte.rarete === "Epique") {
+                            embedColor = 0xC200C2;
+                        } else if (carte.rarete === "Rare") {
+                            embedColor = 0x0099FF;
+                        } else {
+                            embedColor = 0x00AE86;
+                        }
 
-                    await i.update({ embeds: [cardsEmbed], components: [] });
+                        return new EmbedBuilder()
+                            .setColor(embedColor)
+                            .setTitle(`${carte._id} - ${carte.nom}`)
+                            .setDescription(`**Famille** : ${carte.famille}\n**Rarete** : ${carte.rarete}`)
+                            .setImage(carte.image)
+                            .setTimestamp();
+                    });
+
+                    await i.update({ embeds: embeds, components: [] });
                 }
             });
 
