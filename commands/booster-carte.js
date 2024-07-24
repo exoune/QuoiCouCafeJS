@@ -8,7 +8,7 @@ const mongoose = require('mongoose');
 const TOTAL_CARDS = 176;
 
 // URL de l'image du booster (remplacez ceci par l'URL réelle de votre image de booster)
-const BOOSTER_IMAGE_URL = 'https://example.com/path/to/booster-image.jpg';
+const BOOSTER_IMAGE_URL = 'https://i.pinimg.com/736x/51/f2/ef/51f2efd58e76a5d99a2e9f45326ea451.jpg';
 
 const collectionModel = mongoose.model('collectionCarte', collectionCarteSchema);
 const dailyModel = mongoose.model('dailyLimits', dailyLimitsCarteSchema);
