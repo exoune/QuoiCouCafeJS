@@ -118,7 +118,7 @@ module.exports = {
         });
 
         // Planifier la réinitialisation des variables 'nbJour' tous les jours à 2h40
-        cron.schedule('30 9 * * *', async () => {
+        cron.schedule('40 2 * * *', async () => {
             try {
                 await dailyModel.updateMany({}, { nbJour : 0 });
                 console.log("La variable 'nbJour' a été réinitialisée pour tous les utilisateurs.");
