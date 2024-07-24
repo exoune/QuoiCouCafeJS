@@ -26,7 +26,7 @@ module.exports = {
             let user = await dailyModel.findById(userid);
 
             // Vérifier si l'utilisateur a déjà utilisé une carte aujourd'hui
-            if (user.nbJour >= 2) {
+            if (user.nbJour >= 1) {
                 await interaction.reply("Vous avez attrapé assez de cartes pour aujourd'hui, laissez-en aux autres.");
                 return;
             }
