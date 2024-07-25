@@ -10,6 +10,9 @@ const TOTAL_CARDS = 176;
 // URL de l'image du booster (remplacez ceci par l'URL réelle de votre image de booster)
 const BOOSTER_IMAGE_URL = 'https://i.pinimg.com/736x/67/72/33/677233debfa9bed20c397226c5c5e29a.jpg';
 
+// URL du GIF d'animation (remplacez ceci par l'URL réelle de votre GIF d'animation)
+const ANIMATION_GIF_URL = 'https://media.tenor.com/ANTR-voCFqUAAAAM/genshin-impact-intro.gif';
+
 const collectionModel = mongoose.model('collectionCarte', collectionCarteSchema);
 const dailyModel = mongoose.model('dailyLimits', dailyLimitsCarteSchema);
 
@@ -57,9 +60,23 @@ module.exports = {
                 if (i.customId === 'open_cards') {
                     collector.stop();
 
+                    // Afficher le GIF d'animation
+                    await i.update({
+                        embeds: [
+                            new EmbedBuilder()
+                                .setColor(0x00AE86)
+                                .setTitle('Ouverture du booster...')
+                                .setImage(ANIMATION_GIF_URL)
+                                .setTimestamp()
+                        ],
+                        components: []
+                    });
+
+                    // Attendre la durée de l'animation (par exemple, 3 secondes)
+                    await new Promise(resolve => setTimeout(resolve, 3000));
+
                     // Tirer trois cartes aléatoires
                     const cards = [];
-                    let couleur;
                     for (let j = 0; j < 3; j++) {
                         let randomCarte = Math.floor(Math.random() * TOTAL_CARDS) + 1;
                         let carte = await collectionModel.findOne({ _id: randomCarte });
@@ -73,16 +90,6 @@ module.exports = {
                         user.nbTotal += 1;
                         carte.quantite -= 1;
                         carte.save();
-
-                        if (carte.rarete === "Legendaire") {
-                            couleur = 0xFFD700;
-                        } else if (carte.rarete === "Epique") {
-                            couleur = 0xC200C2;
-                        } else if (carte.rarete === "Rare") {
-                            couleur = 0x0099FF;
-                        } else {
-                            couleur = 0x00AE86;
-                        }
                     }
 
                     user.nbJour += 1;
@@ -109,7 +116,7 @@ module.exports = {
                             .setTimestamp();
                     });
 
-                    await i.update({ embeds: embeds, components: [] });
+                    await i.editReply({ content: 'Voici vos cartes !', embeds: embeds, components: [] });
                 }
             });
 
