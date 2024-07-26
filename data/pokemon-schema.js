@@ -13,6 +13,11 @@ const pokemonSchema = new Schema({
         required: true,
     },
 
+    extension: {
+        type: String,
+        required: true,
+    },
+
     imagePokemon: {
         type: String,
         required: true,
