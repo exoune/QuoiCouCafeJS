@@ -392,7 +392,7 @@ async function rockPaperScissorsGame(message, randomId) {
     message.channel.awaitMessages({ filter, max: 1, time: 30000, errors: ['time'] })
         .then(async collected => {
             const userChoice = collected.first().content.trim().toLowerCase();
-            if (userChoice === botChoice) {
+            if ((userChoice === botChoice) || (userChoice == "pierre" && botChoice == "ciseaux") || (userChoice == "ciseaux" && botChoice == "feuille") || (userChoice == "feuille" && botChoice == "pierre")) {
                 try {
                     if (pokemonGame) {
                         await addPokemonToCollection(message.author.id, message.author.username, pokemonGame._id);
