@@ -22,7 +22,7 @@ const CHANNEL_ID_MESSAGES = '1247522632052506715';
 const CHANNEL_ID_DEATHS = '1247620018871472279';
 const MINECRAFT_URL = 'http://QUOICOUMINECRAFT.exaroton.me:36578'; // Update with your Minecraft server URL
 
-const MAX_POKEMON = 4;
+const MAX_POKEMON = 59;
 const CHANNEL_ATTRAPE = '1264538223477002281';
 const CHANNEL_TEA_TIME = '1263419458999816192';
 
@@ -313,9 +313,17 @@ async function startGame(message) {
     const userPokemon = await userPokemonModel.findOne({ _id : message.author.id });
 
     let randomId = Math.floor(Math.random() * MAX_POKEMON) + 1;
+    
     while(userPokemon.pokemon.includes(randomId)){
         randomId = Math.floor(Math.random() * MAX_POKEMON) + 1;
+        if(!userPokemon.pokemon.includes(randomId) && 59 <= randomId >= 55){
+            let chance = Math.floor(Math.random() * 100) + 1;
+            if(chance < 90){
+                randomId = Math.floor(Math.random() * MAX_POKEMON) + 1;
+            }
+        }
     }
+
     const pokemon = await pokemonModel.findOne({ _id: randomId });
 
     // Afficher l'image du Pokémon avant de commencer le mini-jeu
