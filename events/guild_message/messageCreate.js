@@ -1,14 +1,14 @@
-
-const Logger = require("../../utils/Logger")
-const { feurCountSchema } = require('../../data/feur-count-schema.js')
-const { optionsSchema } = require('../../data/options-schema.js')
-const { familiersSchema } = require('../../data/familiers-schema.js')
-const { mesfamiliersSchema } = require('../../data/mesfamiliers-schema.js')
+const Logger = require("../../utils/Logger");
+const { feurCountSchema } = require('../../data/feur-count-schema.js');
+const { optionsSchema } = require('../../data/options-schema.js');
+const { familiersSchema } = require('../../data/familiers-schema.js');
+const { mesfamiliersSchema } = require('../../data/mesfamiliers-schema.js');
 const { troubadourSchema } = require('../../data/troubadour-schema.js');
+const { pokemonSchema } = require('../../data/pokemon-schema.js');
+const { userPokemonSchema } = require('../../data/userPokemon-schema.js');
 
-const { ActivityType } = require('discord.js');
-const mongoose = require('mongoose')
-
+const { Client, Intents, EmbedBuilder, ActionRowBuilder, ButtonBuilder, ButtonStyle, ComponentType } = require('discord.js');
+const mongoose = require('mongoose');
 const cron = require('node-cron');
 
 const regexPattern = /\s+/g;
@@ -22,7 +22,13 @@ const CHANNEL_ID_MESSAGES = '1247522632052506715';
 const CHANNEL_ID_DEATHS = '1247620018871472279';
 const MINECRAFT_URL = 'http://QUOICOUMINECRAFT.exaroton.me:36578'; // Update with your Minecraft server URL
 
+const MAX_POKEMON = 4;
+const CHANNEL_ATTRAPE = '1264538223477002281';
+const CHANNEL_TEA_TIME = '1263419458999816192';
+
 const troubadourModel = mongoose.model('troubadour', troubadourSchema);
+const pokemonModel = mongoose.model('pokemon', pokemonSchema);
+const userPokemonModel = mongoose.model('userPokemon', userPokemonSchema);
 
 module.exports = {
     name: 'messageCreate',
@@ -39,23 +45,6 @@ module.exports = {
                 console.error('Erreur lors de l\'envoi du message à Minecraft:', error);
             });
         }
-
-        /* const channelName = '🎶🎧-bemusic';  // Remplacez par le nom de votre canal
-        if (message.channel.name === channelName) {
-            const spotifyUrlPattern = /https:\/\/open\.spotify\.com\/track\/([a-zA-Z0-9]+)/;
-            const match = spotifyUrlPattern.exec(message.content);
-            if (match) {
-                const trackId = match[1];
-                try {
-                    await spotifyApi.addTracksToPlaylist(playlistId, [`spotify:track:${trackId}`]);
-                    message.channel.send('La chanson a été ajoutée à la playlist!');
-                } catch (error) {
-                    console.error('Erreur lors de l\'ajout de la chanson à la playlist:', error);
-                    message.channel.send('Une erreur est survenue lors de l\'ajout de la chanson à la playlist.');
-                }
-            }
-        } */
-
 
         // Vérifier si le message contient le nom d'un familier
         const familiersModel = mongoose.model('familiers', familiersSchema);
@@ -87,6 +76,50 @@ module.exports = {
                         message.reply('Désolé, vous n\'avez pas répondu à temps. Essayez à nouveau plus tard.').catch(console.error);
                     });
             }
+        }
+
+        if (message.author.bot) return;
+
+        const chance = Math.random();
+        if (chance < 0.9 && (message.channel.id == CHANNEL_ATTRAPE || message.channel.id == CHANNEL_TEA_TIME)) { // 1% de chance
+
+            const embed = new EmbedBuilder()
+                .setTitle('Vous êtes tombé dans les hautes herbes !')
+                .setDescription('Un Pokémon sauvage apparaît ! Voulez-vous accepter le combat ?')
+                .setImage('https://i.gifer.com/sjg.gif');
+
+            const row = new ActionRowBuilder()
+                .addComponents(
+                    new ButtonBuilder()
+                        .setCustomId('accept')
+                        .setLabel('Accepter')
+                        .setStyle(ButtonStyle.Success),
+                    new ButtonBuilder()
+                        .setCustomId('decline')
+                        .setLabel('Fuir')
+                        .setStyle(ButtonStyle.Danger),
+                );
+
+            const fightMessage = await message.channel.send({ embeds: [embed], components: [row] });
+
+            const filter = interaction => ['accept', 'decline'].includes(interaction.customId) && interaction.user.id === message.author.id;
+
+            const collector = fightMessage.createMessageComponentCollector({ filter, time: 60000 });
+
+            collector.on('collect', async interaction => {
+                if (interaction.customId === 'accept') {
+                    await interaction.update({ content: 'Vous avez accepté le combat !', components: [] });
+                    startGame(message);
+                } else {
+                    await interaction.update({ content: 'Vous avez fuis le combat.', components: [] });
+                }
+            });
+
+            collector.on('end', collected => {
+                if (!collected.size) {
+                    fightMessage.edit({ content: 'Vous n\'avez pas répondu à temps.', components: [] });
+                }
+            });
         }
 
         if(message.content.includes(client.user.id)){
@@ -160,15 +193,6 @@ module.exports = {
             message.reply("Je néo drift dans ta daronne");
             Logger.info(`Neo ${message.author.username} | ${message.channel.name}`);
         }
-        /* if(message.author.id === "124917171359973376"){
-            // Supprimer le message original
-            await message.delete();
-            
-            // Envoyer un nouveau message avec l'image
-            await message.channel.send({
-                files: [troubadour.image]
-            });
-        } */
 
         if (message.content.toLowerCase().replace(regexPattern2, "").replace(regexPattern, "").endsWith("quoi") 
             || message.content.toLowerCase().replace(regexPattern2, "").replace(regexPattern, "").endsWith("quoi ?")
@@ -204,7 +228,7 @@ module.exports = {
             });
 
             await client.user.setPresence({
-                activities: [{ name: `${x.feurCount} Feurs`, type: ActivityType.Playing }],
+                activities: [{ name: `${x.feurCount} Feurs`, type: 'PLAYING' }],
             });
         }
         if(message.content.toLowerCase().replace(regexPattern2, "").replace(regexPattern, "").endsWith("comment")
@@ -234,7 +258,7 @@ module.exports = {
             });
 
             client.user.setPresence({
-                activities: [{ name: `${x.feurCount} Feurs`, type: ActivityType.Playing }],
+                activities: [{ name: `${x.feurCount} Feurs`, type: 'PLAYING' }],
             });
         }
 
@@ -245,15 +269,10 @@ module.exports = {
             await member.roles.add(role);
             message.reply('Mot de passe correct. Vous avez maintenant accès au salon.');    
         }
-        /* if(message.content.toLowerCase().includes(mdp) && !message.content.toLowerCase().includes(pass)) {
-            message.reply('Mot de passe incorrect. Veuillez réessayer.');
-        } */
     }
-}
-
+};
 
 function getProbabilityByRarity(rarity) {
-// Logique pour calculer la probabilité en fonction de la rareté du familier
     switch (rarity) {
         case 1:
             return 0.9; // 90% de chance
@@ -272,22 +291,179 @@ function getProbabilityByRarity(rarity) {
 
 async function addFamiliarToUser(userId, familiarNom) {
     try {
-        const MesFamiliersModel = mongoose.model('mesfamiliers', mesfamiliersSchema); // Créez le modèle à partir du schéma
+        const MesFamiliersModel = mongoose.model('mesfamiliers', mesfamiliersSchema);
 
-        // Recherchez l'utilisateur dans la base de données
         let user = await MesFamiliersModel.findOne({ _id: userId });
 
-        // Si l'utilisateur n'existe pas, créez-le avec le familier attrapé
         if (!user) {
             user = new MesFamiliersModel({ _id: userId, familiersAttrapes: [familiarNom] });
         } else {
-            // Ajoutez le familier à la liste des familiers attrapés pour l'utilisateur
             user.familiersAttrapes.push(familiarNom);
         }
 
-        // Enregistrez les modifications dans la base de données
         await user.save();
     } catch (error) {
         console.error('Erreur lors de l\'ajout de familier à l\'utilisateur :', error);
     }
 }
+
+async function startGame(message) {
+    const minigames = ['numberGuessing', 'rockPaperScissors', 'mathGame'];
+    const chosenMinigame = minigames[Math.floor(Math.random() * minigames.length)];
+    const userPokemon = await userPokemonModel.findOne({ _id : message.author.id });
+
+    let randomId = Math.floor(Math.random() * MAX_POKEMON) + 1;
+    while(userPokemon.pokemon.includes(randomId)){
+        randomId = Math.floor(Math.random() * MAX_POKEMON) + 1;
+    }
+    const pokemon = await pokemonModel.findOne({ _id: randomId });
+
+    // Afficher l'image du Pokémon avant de commencer le mini-jeu
+    const embed = new EmbedBuilder()
+        .setTitle(`Combat contre ${pokemon.nom}!`)
+        .setImage(pokemon.imagePokemon); // Image du Pokémon sauvage
+    
+    await message.channel.send({ embeds: [embed] });
+
+    if (chosenMinigame === 'numberGuessing') {
+        await numberGuessingGame(message, randomId);
+    } else if (chosenMinigame === 'rockPaperScissors') {
+        await rockPaperScissorsGame(message, randomId);
+    } else if (chosenMinigame === 'mathGame') {
+        await mathGame(message, randomId);
+    }
+}
+
+async function numberGuessingGame(message, randomId) {
+    const min = 1;
+    const max = 3;
+    const targetNumber = Math.floor(Math.random() * (max - min + 1)) + min;
+
+    await message.reply(`Je pense à un nombre entre ${min} et ${max}. Pouvez-vous deviner lequel ?`);
+    const pokemonGame = await pokemonModel.findOne({ _id: randomId });
+
+    const filter = response => response.author.id === message.author.id;
+    message.channel.awaitMessages({ filter, max: 1, time: 30000, errors: ['time'] })
+        .then(async collected => {
+            const guess = parseInt(collected.first().content.trim());
+            if (guess === targetNumber) {
+                try {
+                    if (pokemonGame) {
+                        await addPokemonToCollection(message.author.id, message.author.username, pokemonGame._id);
+
+                        const embed = new EmbedBuilder()
+                            .setTitle('Félicitations!')
+                            .setDescription(`Vous avez fait le même choix que moi (${targetNumber}). Vous avez attrapé un ${pokemonGame.nom}!`)
+                            .setImage(pokemonGame.imageCarte); // Image du Pokémon après la victoire
+
+                        await message.reply({ embeds: [embed] });
+                    } else {
+                        message.reply(`Désolé, aucun Pokémon trouvé avec l'ID ${randomId}. Essayez à nouveau plus tard.`);
+                    }
+                } catch (error) {
+                    console.error('Erreur lors de la récupération du Pokémon:', error);
+                    message.reply('Désolé, une erreur est survenue lors de la récupération du Pokémon. Essayez à nouveau plus tard.');
+                }
+            } else {
+                message.reply(`Désolé, la bonne réponse était ${targetNumber}. Essayez à nouveau plus tard.`);
+            }
+        })
+        .catch(() => {
+            message.reply('Désolé, vous n\'avez pas répondu à temps. Essayez à nouveau plus tard.');
+        });
+}
+
+async function rockPaperScissorsGame(message, randomId) {
+    const choices = ['pierre', 'feuille', 'ciseaux'];
+    const botChoice = choices[Math.floor(Math.random() * choices.length)];
+
+    await message.reply('Jouons à Pierre Feuille Ciseaux! Répondez avec votre choix : `pierre`, `feuille`, ou `ciseaux`.');
+    const pokemonGame = await pokemonModel.findOne({ _id: randomId });
+
+    const filter = response => response.author.id === message.author.id && choices.includes(response.content.toLowerCase());
+    message.channel.awaitMessages({ filter, max: 1, time: 30000, errors: ['time'] })
+        .then(async collected => {
+            const userChoice = collected.first().content.trim().toLowerCase();
+            if (userChoice === botChoice) {
+                try {
+                    if (pokemonGame) {
+                        await addPokemonToCollection(message.author.id, message.author.username, pokemonGame._id);
+                        const embed = new EmbedBuilder()
+                            .setTitle('Félicitations!')
+                            .setDescription(`Vous avez fait le même choix que moi (${botChoice}). Vous avez attrapé un ${pokemonGame.nom}!`)
+                            .setImage(pokemonGame.imageCarte); // Image du Pokémon après la victoire
+
+                        await message.reply({ embeds: [embed] });
+                    } else {
+                        message.reply(`Désolé, aucun Pokémon trouvé avec l'ID ${randomId}. Essayez à nouveau plus tard.`);
+                    }
+                } catch (error) {
+                    console.error('Erreur lors de la récupération du Pokémon:', error);
+                    message.reply('Désolé, une erreur est survenue lors de la récupération du Pokémon. Essayez à nouveau plus tard.');
+                }
+            } else {
+                message.reply(`J'ai choisi ${botChoice} et vous avez choisi ${userChoice}. Désolé, vous n'avez pas gagné cette fois-ci.`);
+            }
+        })
+        .catch(() => {
+            message.reply('Désolé, vous n\'avez pas répondu à temps. Essayez à nouveau plus tard.');
+        });
+}
+
+async function mathGame(message, randomId) {
+    const num1 = Math.floor(Math.random() * 10) + 1;
+    const num2 = Math.floor(Math.random() * 10) + 1;
+    const correctAnswer = num1 + num2;
+
+    await message.reply(`Quel est le résultat de ${num1} + ${num2} ?`);
+    const pokemonGame = await pokemonModel.findOne({ _id: randomId });
+
+    const filter = response => response.author.id === message.author.id;
+    message.channel.awaitMessages({ filter, max: 1, time: 30000, errors: ['time'] })
+        .then(async collected => {
+            const userAnswer = parseInt(collected.first().content.trim());
+            if (userAnswer === correctAnswer) {
+                try {
+                    if (pokemonGame) {
+                        await addPokemonToCollection(message.author.id, message.author.username, pokemonGame._id);
+                        const embed = new EmbedBuilder()
+                            .setTitle('Félicitations!')
+                            .setDescription(`Vous avez trouvé la bonne réponse : (${correctAnswer}). Vous avez attrapé un ${pokemonGame.nom}!`)
+                            .setImage(pokemonGame.imageCarte); // Image du Pokémon après la victoire
+
+                        await message.reply({ embeds: [embed] });
+                    } else {
+                        message.reply(`Désolé, aucun Pokémon trouvé avec l'ID ${randomId}. Essayez à nouveau plus tard.`);
+                    }
+                } catch (error) {
+                    console.error('Erreur lors de la récupération du Pokémon:', error);
+                    message.reply('Désolé, une erreur est survenue lors de la récupération du Pokémon. Essayez à nouveau plus tard.');
+                }
+            } else {
+                message.reply(`Incorrect. La bonne réponse était : ${correctAnswer}`);
+            }
+        })
+        .catch(() => {
+            message.reply("Désolé, vous n'avez pas répondu à temps.");
+        });
+}
+
+
+async function addPokemonToCollection(userId, userName, pokemonID) {
+    try {
+        const userPokemon = await userPokemonModel.findOne({ _id : userId });
+
+        if (!userPokemon) {
+            total = 1;
+            await new userPokemonModel({ _id : userId, nom : userName, nbTotal : total, pokemon: [pokemonID] });
+        } else {
+            userPokemon.pokemon.push(pokemonID);
+            userPokemon.nbTotal += 1;
+        }
+        
+        await userPokemon.save();
+    } catch (error) {
+        console.error('Erreur lors de l\'ajout du Pokémon à la collection :', error);
+    }
+}
+

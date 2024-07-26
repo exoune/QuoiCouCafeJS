@@ -39,8 +39,10 @@ module.exports = {
 
             // Limiter le nombre d'options pour éviter des erreurs de largeur
             const MAX_OPTIONS = 25; // Limite arbitraire pour éviter les erreurs de largeur
-            const userCardOptions = user.cartes.slice(0, MAX_OPTIONS).map(carteId => ({ label: `Carte ${carteId}`, value: carteId.toString() }));
-            const otherUserCardOptions = otherUser.cartes.slice(0, MAX_OPTIONS).map(carteId => ({ label: `Carte ${carteId}`, value: carteId.toString() }));
+            const uniqueUserCards = [...new Set(user.cartes)].slice(0, MAX_OPTIONS);
+            const uniqueOtherUserCards = [...new Set(otherUser.cartes)].slice(0, MAX_OPTIONS);
+            const userCardOptions = uniqueUserCards.map(carteId => ({ label: `Carte ${carteId}`, value: carteId.toString() }));
+            const otherUserCardOptions = uniqueOtherUserCards.map(carteId => ({ label: `Carte ${carteId}`, value: carteId.toString() }));
 
             // Sélecteurs de cartes
             const userCardSelector = new StringSelectMenuBuilder()
