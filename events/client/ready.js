@@ -287,33 +287,40 @@ module.exports = {
             timezone: "Europe/Paris"
         }); */
 
-        // Planifier l'envoi du message à 11h01 du lundi au vendredi
-        /* cron.schedule('01 11 * * 1-5', async () => {
+        // Calcule la date du prochain lundi à 11:01
+        const now = moment().tz("Europe/Paris");
+        const nextMonday = now.clone().day(8).hour(11).minute(1).second(0);
+
+        if (now.day() === 1 && now.hour() < 11) {
+            nextMonday.add(-7, 'days');  // Si aujourd'hui est lundi avant 11h, planifiez pour aujourd'hui
+        }
+
+        const task = cron.schedule(`01 11 ${nextMonday.date()} ${nextMonday.month() + 1} *`, async () => {
             console.log("La tâche cron s'exécute à l'heure prévue !");
             const channel = client.channels.cache.get(CHANNEL_ID);
-            gifUrl = 'https://www.photofunky.net/output/image/0/d/3/7/0d379e/photofunky.gif'; // URL du GIF
+            const gifUrl = 'https://www.photofunky.net/output/image/0/d/3/7/0d379e/photofunky.gif'; // URL du GIF
 
             if (channel) {
-                // Envoyer le message
-
-                await channel.send({
-                    content: ` COURGE ${roleClemence} !`,
-                    files: [gifUrl]
-                })
-                    .then(async sentMessage => {
-                        // Ajouter la réaction au message
-                        await sentMessage.react('🎃');
-                        await sentMessage.react('🥳');
-                    })
-                    .catch(error => {
-                        console.error('Erreur lors de l\'envoi du message :', error);
+                try {
+                    const sentMessage = await channel.send({
+                        content: ` COURGE ${roleClemence} !`,
+                        files: [gifUrl]
                     });
+
+                    await sentMessage.react('🎃');
+                    await sentMessage.react('🥳');
+                } catch (error) {
+                    console.error('Erreur lors de l\'envoi du message :', error);
+                }
             } else {
                 console.error('Canal introuvable.');
             }
+
+            // Désactiver la tâche après l'exécution
+            task.stop();
         }, {
             timezone: "Europe/Paris"
-        }); */
+        });
 
         // Planifier l'envoi du message à 12h00 du lundi au vendredi
         /* cron.schedule('00 12 * * 1-5', async () => {
