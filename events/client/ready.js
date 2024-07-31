@@ -38,6 +38,7 @@ const OPENWEATHERMAP_API_KEY = '700b85be6984d2d7eef1751af9704030';  // Remplace 
 
 const roleId = '1219229682499588156'; // ID du rôle à mentionner
 const roleMention = `<@&${roleId}>`; // Mention du rôle
+const roleClemence = `<@&${'1222812944476405771'}>`; // Mention du rôle
 
 //---------------------------------------------- MODELS ------------------------------------------------
 const UserModel = mongoose.model('userP', userPSchema);
@@ -146,7 +147,7 @@ module.exports = {
         });
 
         // Planifier l'envoi du message à 9h20 du lundi au vendredi
-        cron.schedule('20 9 * * 1-5', async () => {
+        /* cron.schedule('20 9 * * 1-5', async () => {
             console.log("La tâche cron s'exécute à l'heure prévue !");
             const channel = client.channels.cache.get(CHANNEL_ID);
             gifUrl = 'https://media.giphy.com/media/JIX9t2j0ZTN9S/giphy.gif'; // URL du GIF
@@ -170,10 +171,10 @@ module.exports = {
             }
         }, {
             timezone: "Europe/Paris"
-        });
+        }); */
 
         // Planifier l'envoi du message à 10h00 du lundi au vendredi
-        cron.schedule('30 9 * * 1-5', async () => {
+        /* cron.schedule('30 9 * * 1-5', async () => {
             console.log("La tâche cron s'exécute à l'heure prévue !");
             const channel = client.channels.cache.get(CHANNEL_ID); 
             gifUrl = 'https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExM2dnYTY1b3VzMms4czZzM2o4ZXJwbzJ0bW9lYWJkNGlieWdtMXVwNCZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/9vzk5JCmTBPfa/giphy.gif'; // URL du GIF
@@ -189,7 +190,7 @@ module.exports = {
             }
         }, {
             timezone: "Europe/Paris"
-        });
+        }); */
 
         // Planifie l'envoi de l'angle' à 9h40 tous les jours
         cron.schedule('40 9 * * *', async () => {
@@ -258,7 +259,7 @@ module.exports = {
         });
 
         // Planifier l'envoi du message à 11h00 du lundi au vendredi
-        cron.schedule('00 11 * * 1-5', async () => {
+        /* cron.schedule('00 11 * * 1-5', async () => {
             console.log("La tâche cron s'exécute à l'heure prévue !");
             const channel = client.channels.cache.get(CHANNEL_ID);
             gifUrl = 'https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExNDRrYzZpODdkZWJuMWppdnpqcG02ZWJxem16YWthbzIzb2Rtb2Z2eSZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/VrFsENnbl5GCs/giphy-downsized-large.gif'; // URL du GIF
@@ -284,10 +285,38 @@ module.exports = {
             }
         }, {
             timezone: "Europe/Paris"
-        });
+        }); */
+
+        // Planifier l'envoi du message à 11h01 du lundi au vendredi
+        /* cron.schedule('01 11 * * 1-5', async () => {
+            console.log("La tâche cron s'exécute à l'heure prévue !");
+            const channel = client.channels.cache.get(CHANNEL_ID);
+            gifUrl = 'https://www.photofunky.net/output/image/0/d/3/7/0d379e/photofunky.gif'; // URL du GIF
+
+            if (channel) {
+                // Envoyer le message
+
+                await channel.send({
+                    content: ` COURGE ${roleClemence} !`,
+                    files: [gifUrl]
+                })
+                    .then(async sentMessage => {
+                        // Ajouter la réaction au message
+                        await sentMessage.react('🎃');
+                        await sentMessage.react('🥳');
+                    })
+                    .catch(error => {
+                        console.error('Erreur lors de l\'envoi du message :', error);
+                    });
+            } else {
+                console.error('Canal introuvable.');
+            }
+        }, {
+            timezone: "Europe/Paris"
+        }); */
 
         // Planifier l'envoi du message à 12h00 du lundi au vendredi
-        cron.schedule('00 12 * * 1-5', async () => {
+        /* cron.schedule('00 12 * * 1-5', async () => {
             console.log("La tâche cron s'exécute à l'heure prévue !");
             const channel = client.channels.cache.get(CHANNEL_ID);
             gifUrl = 'https://i.pinimg.com/564x/51/d6/3f/51d63faf6312a3bc4873ee24d98cdfed.jpg'; 
@@ -304,7 +333,7 @@ module.exports = {
             }
         }, {
             timezone: "Europe/Paris"
-        });
+        }); */
 
         
 // ---------------------------------------------- APRES-MIDI ------------------------------------------------
