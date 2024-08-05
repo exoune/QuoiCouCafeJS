@@ -81,7 +81,7 @@ module.exports = {
         if (message.author.bot) return;
 
         const chance = Math.random();
-        if (chance < 0.01 && (message.channel.id == CHANNEL_ATTRAPE || message.channel.id == CHANNEL_TEA_TIME)) { // 1% de chance
+        if (chance < 0.05 ){//&& (message.channel.id == CHANNEL_ATTRAPE || message.channel.id == CHANNEL_TEA_TIME)) { // 1% de chance
 
             const embed = new EmbedBuilder()
                 .setTitle('Vous êtes tombé dans les hautes herbes !')

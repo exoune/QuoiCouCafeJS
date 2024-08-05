@@ -39,6 +39,7 @@ const OPENWEATHERMAP_API_KEY = '700b85be6984d2d7eef1751af9704030';  // Remplace 
 const roleId = '1219229682499588156'; // ID du rôle à mentionner
 const roleMention = `<@&${roleId}>`; // Mention du rôle
 const roleClemence = `<@&${'1222812944476405771'}>`; // Mention du rôle
+const roleAmbre = `<@&${'356091017314828289'}>`; // Mention du rôle
 
 //---------------------------------------------- MODELS ------------------------------------------------
 const UserModel = mongoose.model('userP', userPSchema);
@@ -298,12 +299,12 @@ module.exports = {
         const task = cron.schedule(`01 11 ${nextMonday.date()} ${nextMonday.month() + 1} *`, async () => {
             console.log("La tâche cron s'exécute à l'heure prévue !");
             const channel = client.channels.cache.get(CHANNEL_ID);
-            const gifUrl = 'https://www.photofunky.net/output/image/0/d/3/7/0d379e/photofunky.gif'; // URL du GIF
+            const gifUrl = 'https://www.photofunky.net/output/image/c/f/b/b/cfbb16/photofunky.gif'; // URL du GIF
 
             if (channel) {
                 try {
                     const sentMessage = await channel.send({
-                        content: ` COURGE ${roleClemence} !`,
+                        content: ` COURGE ${roleClemence} & ${roleAmbre} !`,
                         files: [gifUrl]
                     });
 
@@ -746,7 +747,7 @@ module.exports = {
             }, triggerMs);
         }());
 
-        (function loop() {
+/*         (function loop() {
 
             const triggerTime = getRandomHour();
         
@@ -776,7 +777,7 @@ module.exports = {
                     beVacquaTrigger();
                     loop();  
             }, triggerMs);
-        }());
+        }()); */
         
     }
 }
@@ -800,7 +801,7 @@ function beMusicTrigger(){
         .catch(error => Logger.error(error));
 }
 
-function bePoulTrigger(){
+/* function bePoulTrigger(){
     Logger.event("BePoul | Triggered")
     globalClient.channels.cache.get(`1240300484670132244`).send(`<@&${'1240583679265214474'}> C'est l'heure de prendre son poul, faut faire attention à son petit coeur !`)
         .catch(error => Logger.error(error));
@@ -812,7 +813,7 @@ function beVacquaTrigger(){
         files: ["https://tenor.com/bzKL6.gif"]
     })
         .catch(error => Logger.error(error));
-}
+} */
 
 
 // ---------------------------------------------- FONCTIONS ------------------------------------------------
